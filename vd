@@ -66,8 +66,10 @@ while true; do
   echo -e "\td\tshow cvs diff"
   echo -e "\tc\tcvs commit, restore local copy, and exit (keep backups)"
   echo -e "\tC\tcvs commit, restore local copy, and exit (delete backups)"
+  echo -e "\tct\tcvs commit, tag, restore local copy, and exit (keep backups)"
+  echo -e "\tCt\tcvs commit, tag, restore local copy, and exit (delete backups)"
   echo -e "\tcc\tcvs commit, tag CUR, restore local copy, and exit (keep backups)"
-  echo -e "\tCC\tcvs commit, tag CUR, restore local copy, and exit (delete backups)"
+  echo -e "\tCc\tcvs commit, tag CUR, restore local copy, and exit (delete backups)"
   echo -e "\tu\tbackup edited file, undo, and exit (keep backups)" 
   vprint -e "\t\t\tcp $vdORIGINAL $vdORIGINAL.${vdEDITSUFFIX}"
   vprint -e "\t\t\tcp $vdORIGINAL.${vdLOCALSUFFIX} $vdORIGINAL"
@@ -118,6 +120,32 @@ while true; do
       mv $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
       exit
       ;;
+    ct)
+      echo -ne "commit message: "
+      read msg
+      echo -ne "tag: "
+      read tag
+      echo "committing $vdORIGINAL..."
+      cvs commit -m "$msg" $vdORIGINAL
+      echo "tagging $vdORIGINAL $tag..."
+      cvs tag -F $tag $vdORIGINAL
+      vprint "cp $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL"
+      cp $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
+      exit
+      ;;
+    Ct)
+      echo -ne "commit message: "
+      read msg
+      echo -ne "tag: "
+      read tag
+      echo "committing $vdORIGINAL..."
+      cvs commit -m "$msg" $vdORIGINAL
+      echo "tagging $vdORIGINAL $tag..."
+      cvs tag -F $tag $vdORIGINAL
+      vprint "mv $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL"
+      mv $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
+      exit
+      ;;
     cc)
       echo -ne "commit message: "
       read msg
@@ -129,7 +157,7 @@ while true; do
       cp $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
       exit
       ;;
-    CC)
+    Cc)
       echo -ne "commit message: "
       read msg
       echo "committing $vdORIGINAL..."
