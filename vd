@@ -1,19 +1,20 @@
 #!/bin/bash
 #
-# vimdiff shortcuts
-#
+# cvs up + vimdiff + shortcuts
 # mahaek
 #
+# usage: vd FILENAME
+#
 
-VERBOSE=true
-USERSUFFIX="mahaek"
-LOCALSUFFIX=$USERSUFFIX"LOCAL"
-EDITSUFFIX=$USERSUFFIX"EDIT"
+vdVERBOSE=true
+vdUSERSUFFIX=`id -nu`
+vdLOCALSUFFIX=$vdUSERSUFFIX"LOCAL"
+vdEDITSUFFIX=$vdUSERSUFFIX"EDIT"
 
-ORIGINAL=$1
+vdORIGINAL=$1
 
 function vprint {
-  if [ $VERBOSE ]
+  if [ $vdVERBOSE ]
   then
     echo $*
   fi
@@ -22,97 +23,121 @@ function vprint {
 # check file exists
 if [ $# -lt 1 ]
 then
-  echo "no filename"
+  echo "usage: vd FILENAME"
   exit
-elif [ ! -n $ORIGINAL ]
+elif [ ! -n $vdORIGINAL ]
 then
-  echo "no filename"
+  echo "usage: vd FILENAME"
   exit
-elif [ -d $ORIGINAL ]
+elif [ -d $vdORIGINAL ]
 then
-  echo "$ORIGINAL is a directory"
+  echo "$vdORIGINAL is a directory"
   exit
-elif [ ! -e $ORIGINAL ] 
+elif [ ! -e $vdORIGINAL ] 
 then 
-  echo $ORIGINAL": file not found"
+  echo $vdORIGINAL": file not found"
   exit
 fi
 
-vprint -e "cp $ORIGINAL $ORIGINAL.${LOCALSUFFIX}"
-cp $ORIGINAL $ORIGINAL.${LOCALSUFFIX}
-vprint -e "rm $ORIGINAL; cvs up $ORIGINAL"
-rm $ORIGINAL; cvs up $ORIGINAL
+vprint -e "cp $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}"
+cp $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}
+vprint -e "rm $vdORIGINAL; cvs up $vdORIGINAL"
+rm $vdORIGINAL; cvs up $vdORIGINAL
 
 # check file exists
-if [ ! -e $ORIGINAL ] 
+if [ ! -e $vdORIGINAL ] 
 then 
-  echo $ORIGINAL": file not found in cvs, undoing (check cvs errors)"
-  vprint "cp $ORIGINAL.${LOCALSUFFIX} $ORIGINAL"
-  cp $ORIGINAL.${LOCALSUFFIX} $ORIGINAL
+  echo $vdORIGINAL": file not found in cvs, undoing (check cvs errors)"
+  vprint "cp $vdORIGINAL.${vdLOCALSUFFIX} $vdORIGINAL"
+  cp $vdORIGINAL.${vdLOCALSUFFIX} $vdORIGINAL
   exit
 fi
 
-vimdiff $ORIGINAL $ORIGINAL.${LOCALSUFFIX}
+vimdiff $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}
 
-vprint -e "\nVD HISTORY"
-vprint -e "\tcp $ORIGINAL $ORIGINAL.${LOCALSUFFIX}"
-vprint -e "\trm $ORIGINAL; cvs up $ORIGINAL"
-vprint -e "\tvimdiff $ORIGINAL $ORIGINAL.$LOCALSUFFIX"
+vprint -e "\nHISTORY"
+vprint -e "\tcp $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}"
+vprint -e "\trm $vdORIGINAL; cvs up $vdORIGINAL"
+vprint -e "\tvimdiff $vdORIGINAL $vdORIGINAL.$vdLOCALSUFFIX"
 
 while true; do
-  echo -e "\nVD COMMANDS "
+  echo -e "\nCOMMANDS "
   echo -e "\tl\tshow current files"
   echo -e "\td\tshow cvs diff"
-  echo -e "\tcommit\tcvs commit, restore local copy, and exit (keep backups)"
-  echo -e "\tCommit\tcvs commit, restore local copy, and exit (delete backups)"
+  echo -e "\tc\tcvs commit, restore local copy, and exit (keep backups)"
+  echo -e "\tC\tcvs commit, restore local copy, and exit (delete backups)"
+  echo -e "\tcc\tcvs commit, tag CUR, restore local copy, and exit (keep backups)"
+  echo -e "\tCC\tcvs commit, tag CUR, restore local copy, and exit (delete backups)"
   echo -e "\tu\tbackup edited file, undo, and exit (keep backups)" 
-  vprint -e "\t\t\tcp $ORIGINAL $ORIGINAL.${EDITSUFFIX}"
-  vprint -e "\t\t\tcp $ORIGINAL.${LOCALSUFFIX} $ORIGINAL"
+  vprint -e "\t\t\tcp $vdORIGINAL $vdORIGINAL.${vdEDITSUFFIX}"
+  vprint -e "\t\t\tcp $vdORIGINAL.${vdLOCALSUFFIX} $vdORIGINAL"
   echo -e "\tU\tdiscard edited file, undo, and exit (delete backups)" 
-  vprint -e "\t\t\tmv $ORIGINAL.${LOCALSUFFIX} $ORIGINAL"
+  vprint -e "\t\t\tmv $vdORIGINAL.${vdLOCALSUFFIX} $vdORIGINAL"
   echo -e "\tx\texit"
   echo -ne "\nenter cmd: "
   read cmd
   case $cmd in
     u)
       vprint "undoing"
-      vprint "cp $ORIGINAL $ORIGINAL.${EDITSUFFIX}"
-      cp $ORIGINAL $ORIGINAL.${EDITSUFFIX}
-      vprint "cp $ORIGINAL.${LOCALSUFFIX} $ORIGINAL"
-      cp $ORIGINAL.${LOCALSUFFIX} $ORIGINAL
+      vprint "cp $vdORIGINAL $vdORIGINAL.${vdEDITSUFFIX}"
+      cp $vdORIGINAL $vdORIGINAL.${vdEDITSUFFIX}
+      vprint "cp $vdORIGINAL.${vdLOCALSUFFIX} $vdORIGINAL"
+      cp $vdORIGINAL.${vdLOCALSUFFIX} $vdORIGINAL
       break
       ;;
     U)
       vprint "undoing (delete backups)"
-      vprint "mv $ORIGINAL.${LOCALSUFFIX} $ORIGINAL"
-      mv $ORIGINAL.${LOCALSUFFIX} $ORIGINAL
+      vprint "mv $vdORIGINAL.${vdLOCALSUFFIX} $vdORIGINAL"
+      mv $vdORIGINAL.${vdLOCALSUFFIX} $vdORIGINAL
       break
       ;;
     l)
       echo -e "\nCURRENT FILES"
-      ls -lt $ORIGINAL*
+      ls -lt $vdORIGINAL*
       ;;
     d)
       echo "getting cvs diff..."
-      cvs diff $ORIGINAL
+      cvs diff $vdORIGINAL
       echo "end of cvs diff"
       ;;
-    commit)
+    c)
       echo -ne "commit message: "
       read msg
-      echo "committing..."
-      cvs commit -m "$msg" $ORIGINAL
-      vprint "cp $ORIGINAL.$LOCALSUFFIX $ORIGINAL"
-      cp $ORIGINAL.$LOCALSUFFIX $ORIGINAL
+      echo "committing $vdORIGINAL..."
+      cvs commit -m "$msg" $vdORIGINAL
+      vprint "cp $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL"
+      cp $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
       exit
       ;;
-    Commit)
+    C)
       echo -ne "commit message: "
       read msg
-      echo "committing..."
-      cvs commit -m "$msg" $ORIGINAL
-      vprint "mv $ORIGINAL.$LOCALSUFFIX $ORIGINAL"
-      mv $ORIGINAL.$LOCALSUFFIX $ORIGINAL
+      echo "committing $vdORIGINAL..."
+      cvs commit -m "$msg" $vdORIGINAL
+      vprint "mv $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL"
+      mv $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
+      exit
+      ;;
+    cc)
+      echo -ne "commit message: "
+      read msg
+      echo "committing $vdORIGINAL..."
+      cvs commit -m "$msg" $vdORIGINAL
+      echo "tagging $vdORIGINAL CUR..."
+      cvs tag -F CUR $vdORIGINAL
+      vprint "cp $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL"
+      cp $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
+      exit
+      ;;
+    CC)
+      echo -ne "commit message: "
+      read msg
+      echo "committing $vdORIGINAL..."
+      cvs commit -m "$msg" $vdORIGINAL
+      echo "tagging $vdORIGINAL CUR..."
+      cvs tag -F CUR $vdORIGINAL
+      vprint "mv $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL"
+      mv $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
       exit
       ;;
     x)
