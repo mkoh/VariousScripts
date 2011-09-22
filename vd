@@ -1,0 +1,126 @@
+#!/bin/bash
+#
+# vimdiff shortcuts
+#
+# mahaek
+#
+
+VERBOSE=true
+USERSUFFIX="mahaek"
+LOCALSUFFIX=$USERSUFFIX"LOCAL"
+EDITSUFFIX=$USERSUFFIX"EDIT"
+
+ORIGINAL=$1
+
+function vprint {
+  if [ $VERBOSE ]
+  then
+    echo $*
+  fi
+}
+
+# check file exists
+if [ $# -lt 1 ]
+then
+  echo "no filename"
+  exit
+elif [ ! -n $ORIGINAL ]
+then
+  echo "no filename"
+  exit
+elif [ -d $ORIGINAL ]
+then
+  echo "$ORIGINAL is a directory"
+  exit
+elif [ ! -e $ORIGINAL ] 
+then 
+  echo $ORIGINAL": file not found"
+  exit
+fi
+
+vprint -e "cp $ORIGINAL $ORIGINAL.${LOCALSUFFIX}"
+cp $ORIGINAL $ORIGINAL.${LOCALSUFFIX}
+vprint -e "rm $ORIGINAL; cvs up $ORIGINAL"
+rm $ORIGINAL; cvs up $ORIGINAL
+
+# check file exists
+if [ ! -e $ORIGINAL ] 
+then 
+  echo $ORIGINAL": file not found in cvs, undoing (check cvs errors)"
+  vprint "cp $ORIGINAL.${LOCALSUFFIX} $ORIGINAL"
+  cp $ORIGINAL.${LOCALSUFFIX} $ORIGINAL
+  exit
+fi
+
+vimdiff $ORIGINAL $ORIGINAL.${LOCALSUFFIX}
+
+vprint -e "\nVD HISTORY"
+vprint -e "\tcp $ORIGINAL $ORIGINAL.${LOCALSUFFIX}"
+vprint -e "\trm $ORIGINAL; cvs up $ORIGINAL"
+vprint -e "\tvimdiff $ORIGINAL $ORIGINAL.$LOCALSUFFIX"
+
+while true; do
+  echo -e "\nVD COMMANDS "
+  echo -e "\tl\tshow current files"
+  echo -e "\td\tshow cvs diff"
+  echo -e "\tcommit\tcvs commit, restore local copy, and exit (keep backups)"
+  echo -e "\tCommit\tcvs commit, restore local copy, and exit (delete backups)"
+  echo -e "\tu\tbackup edited file, undo, and exit (keep backups)" 
+  vprint -e "\t\t\tcp $ORIGINAL $ORIGINAL.${EDITSUFFIX}"
+  vprint -e "\t\t\tcp $ORIGINAL.${LOCALSUFFIX} $ORIGINAL"
+  echo -e "\tU\tdiscard edited file, undo, and exit (delete backups)" 
+  vprint -e "\t\t\tmv $ORIGINAL.${LOCALSUFFIX} $ORIGINAL"
+  echo -e "\tx\texit"
+  echo -ne "\nenter cmd: "
+  read cmd
+  case $cmd in
+    u)
+      vprint "undoing"
+      vprint "cp $ORIGINAL $ORIGINAL.${EDITSUFFIX}"
+      cp $ORIGINAL $ORIGINAL.${EDITSUFFIX}
+      vprint "cp $ORIGINAL.${LOCALSUFFIX} $ORIGINAL"
+      cp $ORIGINAL.${LOCALSUFFIX} $ORIGINAL
+      break
+      ;;
+    U)
+      vprint "undoing (delete backups)"
+      vprint "mv $ORIGINAL.${LOCALSUFFIX} $ORIGINAL"
+      mv $ORIGINAL.${LOCALSUFFIX} $ORIGINAL
+      break
+      ;;
+    l)
+      echo -e "\nCURRENT FILES"
+      ls -lt $ORIGINAL*
+      ;;
+    d)
+      echo "getting cvs diff..."
+      cvs diff $ORIGINAL
+      echo "end of cvs diff"
+      ;;
+    commit)
+      echo -ne "commit message: "
+      read msg
+      echo "committing..."
+      cvs commit -m "$msg" $ORIGINAL
+      vprint "cp $ORIGINAL.$LOCALSUFFIX $ORIGINAL"
+      cp $ORIGINAL.$LOCALSUFFIX $ORIGINAL
+      exit
+      ;;
+    Commit)
+      echo -ne "commit message: "
+      read msg
+      echo "committing..."
+      cvs commit -m "$msg" $ORIGINAL
+      vprint "mv $ORIGINAL.$LOCALSUFFIX $ORIGINAL"
+      mv $ORIGINAL.$LOCALSUFFIX $ORIGINAL
+      exit
+      ;;
+    x)
+      vprint "exit"
+      break
+      ;;
+    *)
+      echo "unknown cmd"
+      ;;
+  esac
+done
