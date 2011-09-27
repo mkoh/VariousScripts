@@ -41,8 +41,8 @@ fi
 
 vprint -e "cp $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}"
 cp $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}
-vprint -e "rm $vdORIGINAL; cvs up $vdORIGINAL"
-rm $vdORIGINAL; cvs up $vdORIGINAL
+vprint -e "rm $vdORIGINAL; cvs up -A $vdORIGINAL"
+rm $vdORIGINAL; cvs up -A $vdORIGINAL
 
 # check file exists
 if [ ! -e $vdORIGINAL ] 
