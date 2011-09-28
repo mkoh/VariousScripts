@@ -53,7 +53,10 @@ then
   exit
 fi
 
-vimdiff $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}
+# set filetype to extension before vdLOCALSUFFIX
+vimdiff --cmd \
+    'autocmd BufRead *.*.'${vdLOCALSUFFIX}' exec "set ft=".expand("%:t:r:e")' \
+    $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}
 
 vprint -e "\nHISTORY"
 vprint -e "\tcp $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}"
