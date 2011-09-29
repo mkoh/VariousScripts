@@ -21,6 +21,33 @@ function vprint {
   fi
 }
 
+function vLocalVimdiff {
+  # set filetype to extension before vdLOCALSUFFIX
+  vimdiff --cmd \
+      'autocmd BufRead *.*.'${vdLOCALSUFFIX}' exec "doau filetypedetect BufRead ".expand("%:t:r")' \
+      $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}
+}
+
+function vCommit {
+  echo -ne "commit message: "
+  read msg
+  echo "committing $vdORIGINAL..."
+  cvs commit -m "$msg" $vdORIGINAL
+}
+
+function vCommitTag {
+  vCommit
+  if [ $# -lt 1 ]
+  then
+    echo -ne "tag: "
+    read tag
+  else
+    tag=$1
+  fi
+  echo "tagging $vdORIGINAL $tag..."
+  cvs tag -F $tag $vdORIGINAL
+}
+
 # check file exists
 if [ $# -lt 1 ]
 then
@@ -54,10 +81,7 @@ then
   exit
 fi
 
-# set filetype to extension before vdLOCALSUFFIX
-vimdiff --cmd \
-    'autocmd BufRead *.*.'${vdLOCALSUFFIX}' exec "set ft=".expand("%:t:r:e")' \
-    $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}
+vLocalVimdiff
 
 vprint -e "\nHISTORY"
 vprint -e "\tcp $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}"
@@ -68,6 +92,7 @@ while true; do
   echo -e "\nCOMMANDS "
   echo -e "\tl\tshow current files"
   echo -e "\td\tshow cvs diff"
+  echo -e "\tv\tback to vimdiff"
   echo -e "\tc\tcvs commit, restore local copy, and exit (keep backups)"
   echo -e "\tC\tcvs commit, restore local copy, and exit (delete backups)"
   echo -e "\tct\tcvs commit, tag, restore local copy, and exit (keep backups)"
@@ -106,68 +131,77 @@ while true; do
       cvs diff $vdORIGINAL
       echo "end of cvs diff"
       ;;
+    v)
+      vLocalVimdiff
+      ;;
     c)
-      echo -ne "commit message: "
-      read msg
-      echo "committing $vdORIGINAL..."
-      cvs commit -m "$msg" $vdORIGINAL
+      #echo -ne "commit message: "
+      #read msg
+      #echo "committing $vdORIGINAL..."
+      #cvs commit -m "$msg" $vdORIGINAL
+      vCommit
       vprint "cp $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL"
       cp $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
       exit
       ;;
     C)
-      echo -ne "commit message: "
-      read msg
-      echo "committing $vdORIGINAL..."
-      cvs commit -m "$msg" $vdORIGINAL
+      #echo -ne "commit message: "
+      #read msg
+      #echo "committing $vdORIGINAL..."
+      #cvs commit -m "$msg" $vdORIGINAL
+      vCommit
       vprint "mv $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL"
       mv $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
       exit
       ;;
     ct)
-      echo -ne "commit message: "
-      read msg
-      echo -ne "tag: "
-      read tag
-      echo "committing $vdORIGINAL..."
-      cvs commit -m "$msg" $vdORIGINAL
-      echo "tagging $vdORIGINAL $tag..."
-      cvs tag -F $tag $vdORIGINAL
+      #echo -ne "commit message: "
+      #read msg
+      #echo -ne "tag: "
+      #read tag
+      #echo "committing $vdORIGINAL..."
+      #cvs commit -m "$msg" $vdORIGINAL
+      #echo "tagging $vdORIGINAL $tag..."
+      #cvs tag -F $tag $vdORIGINAL
+      vCommitTag
       vprint "cp $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL"
       cp $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
       exit
       ;;
     Ct)
-      echo -ne "commit message: "
-      read msg
-      echo -ne "tag: "
-      read tag
-      echo "committing $vdORIGINAL..."
-      cvs commit -m "$msg" $vdORIGINAL
-      echo "tagging $vdORIGINAL $tag..."
-      cvs tag -F $tag $vdORIGINAL
+      #echo -ne "commit message: "
+      #read msg
+      #echo -ne "tag: "
+      #read tag
+      #echo "committing $vdORIGINAL..."
+      #cvs commit -m "$msg" $vdORIGINAL
+      #echo "tagging $vdORIGINAL $tag..."
+      #cvs tag -F $tag $vdORIGINAL
+      vCommitTag
       vprint "mv $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL"
       mv $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
       exit
       ;;
     cc)
-      echo -ne "commit message: "
-      read msg
-      echo "committing $vdORIGINAL..."
-      cvs commit -m "$msg" $vdORIGINAL
-      echo "tagging $vdORIGINAL CUR..."
-      cvs tag -F CUR $vdORIGINAL
+      #echo -ne "commit message: "
+      #read msg
+      #echo "committing $vdORIGINAL..."
+      #cvs commit -m "$msg" $vdORIGINAL
+      #echo "tagging $vdORIGINAL CUR..."
+      #cvs tag -F CUR $vdORIGINAL
+      vCommitTag CUR
       vprint "cp $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL"
       cp $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
       exit
       ;;
     Cc)
-      echo -ne "commit message: "
-      read msg
-      echo "committing $vdORIGINAL..."
-      cvs commit -m "$msg" $vdORIGINAL
-      echo "tagging $vdORIGINAL CUR..."
-      cvs tag -F CUR $vdORIGINAL
+      #echo -ne "commit message: "
+      #read msg
+      #echo "committing $vdORIGINAL..."
+      #cvs commit -m "$msg" $vdORIGINAL
+      #echo "tagging $vdORIGINAL CUR..."
+      #cvs tag -F CUR $vdORIGINAL
+      vCommitTag CUR
       vprint "mv $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL"
       mv $vdORIGINAL.$vdLOCALSUFFIX $vdORIGINAL
       exit
