@@ -11,7 +11,8 @@ vdUSERSUFFIX=`id -nu`
 vdLOCALSUFFIX=$vdUSERSUFFIX"LOCAL"
 vdEDITSUFFIX=$vdUSERSUFFIX"EDIT"
 
-vdORIGINAL=$1
+vdORIGINAL=${@:${#@}}
+vdUPDATEOPTS=${@:1:$((${#@} - 1))}
 
 function vprint {
   if [ $vdVERBOSE ]
@@ -23,11 +24,11 @@ function vprint {
 # check file exists
 if [ $# -lt 1 ]
 then
-  echo "usage: vd FILENAME"
+  echo "usage: vd [CVS_UP_OPTIONS] FILENAME"
   exit
 elif [ ! -n $vdORIGINAL ]
 then
-  echo "usage: vd FILENAME"
+  echo "usage: vd [CVS_UP_OPTIONS] FILENAME"
   exit
 elif [ -d $vdORIGINAL ]
 then
@@ -41,8 +42,8 @@ fi
 
 vprint -e "cp $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}"
 cp $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}
-vprint -e "rm $vdORIGINAL; cvs up -A $vdORIGINAL"
-rm $vdORIGINAL; cvs up -A $vdORIGINAL
+vprint -e "rm $vdORIGINAL; cvs up $vdUPDATEOPTS $vdORIGINAL"
+rm $vdORIGINAL; cvs up $vdUPDATEOPTS $vdORIGINAL
 
 # check file exists
 if [ ! -e $vdORIGINAL ] 
