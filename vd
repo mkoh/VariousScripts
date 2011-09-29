@@ -56,7 +56,7 @@ fi
 
 # set filetype to extension before vdLOCALSUFFIX
 vimdiff --cmd \
-    'autocmd BufRead *.*.'${vdLOCALSUFFIX}' exec "set ft=".expand("%:t:r:e")' \
+    'autocmd BufRead *.*.'${vdLOCALSUFFIX}' exec "doau filetypedetect BufRead ".expand("%:t:r")' \
     $vdORIGINAL $vdORIGINAL.${vdLOCALSUFFIX}
 
 vprint -e "\nHISTORY"
